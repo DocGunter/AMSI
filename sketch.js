@@ -267,6 +267,11 @@ function draw() {
         roads = [];
         // clear the dots
         dots = [];
+        // loop through the intersections
+        for (let i = 0; i < intersections.length; i++) {
+            // clear the connections
+            intersections[i].connections = [];
+        }
     }
     // set colour to black
     fill(0);
@@ -325,7 +330,7 @@ function draw() {
     text("press d to delete an intersection", 10, height - 120);
     // at the bottom left write 'press n and click to add an intersection'
     text("press n to add an intersection", 10, height - 140);
-    
+
     //if the e key is pressed
     if (keyIsDown(69)) {
         // for each intersection
