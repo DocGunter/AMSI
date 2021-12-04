@@ -332,35 +332,35 @@ function draw() {
     text("press n to add an intersection", 10, height - 140);
 
     //if the e key is pressed
-    if (keyIsDown(69)) {
-        // for each intersection
-        for (let i = 0; i < intersections.length; i++) {
-            // if the mouse is over the intersection
-            if (dist(intersections[i].x, intersections[i].y, mouseX, mouseY) < 20) {
-                // show a box in the top right with the type of intersection inside
-                fill(255);
-                rect(mouseX + 20, mouseY - 20, 200, 200);
-                fill(0);
-                text(intersections[i].type, mouseX + 30, mouseY );
-                // make the text smaller
-                textSize(10);
-                // list current connections of the intersection
-                text("Current connections: "+ intersections[i].connections.length, mouseX + 30, mouseY + 20);
+    
+    // for each intersection
+    for (let i = 0; i < intersections.length; i++) {
+        // if the mouse is over the intersection
+        if (dist(intersections[i].x, intersections[i].y, mouseX, mouseY) < 20) {
+            // show a box in the top right with the type of intersection inside
+            fill(255);
+            rect(mouseX + 20, mouseY - 20, 200, 200);
+            fill(0);
+            text(intersections[i].type, mouseX + 30, mouseY );
+            // make the text smaller
+            textSize(10);
+            // list current connections of the intersection
+            text("Current connections: "+ intersections[i].connections.length, mouseX + 30, mouseY + 20);
 
-                // list the number of cars in the intersection
-                let carsInIntersection = 0;
-                //loop cars
-                for (let j = 0; j < dots.length; j++) {
-                    // if the dot has the intersection as target
-                    if (dots[j].target.x == intersections[i].x && dots[j].target.y == intersections[i].y) {
-                        // add 1 to the carsInIntersection
-                        carsInIntersection++;
-                    }
+            // list the number of cars in the intersection
+            let carsInIntersection = 0;
+            //loop cars
+            for (let j = 0; j < dots.length; j++) {
+                // if the dot has the intersection as target
+                if (dots[j].target.x == intersections[i].x && dots[j].target.y == intersections[i].y) {
+                    // add 1 to the carsInIntersection
+                    carsInIntersection++;
                 }
-                text("Number of cars on road: " + carsInIntersection, mouseX + 30, mouseY + 40);
-                textSize(20);
             }
+            text("Number of cars on road: " + carsInIntersection, mouseX + 30, mouseY + 40);
+            textSize(20);
         }
     }
+    
     
 }
