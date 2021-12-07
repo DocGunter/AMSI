@@ -13,6 +13,8 @@ var cars = [];
 var lanes = [];
 // selected intersection
 var selectedIntersection = [];
+// let mode be set to   
+let editingMode = 'Press Key To Change Mode';
 
 
 // draw function
@@ -20,16 +22,27 @@ function draw() {
     // set the background to black
     background(200);
 
-
+    // if n key is pressed
+    if (keyCode == 78){
+        editingMode = 'New Intersection Mode';
+    }
+    if (keyCode == 67){
+        editingMode = 'Connection Mode';
+    }
+    if (keyCode == 77){
+        editingMode = 'Add Cars Mode';
+    }
     mouseClicked = function() {
         // if the n key is pressed
-        if (keyCode == 78) {
+        // if (keyCode == 78) {
+        if (editingMode == 'New Intersection Mode'){
             // create a new intersection at the mouse location
             console.log("New Intersection added with ID: "+intersections.length);
             intersections.push(new Intersection(createVector(mouseX, mouseY),'roundabout',[],intersections.length,false));
         }
         // // if the c key is pressed
-        if (keyCode == 67) {
+        // if (keyCode == 67) {
+        if (editingMode == 'Connection Mode'){
             // loop through all the intersections
             for (var i = 0; i < intersections.length; i++) {
                 // if the mouse is over the intersection
@@ -124,7 +137,8 @@ function draw() {
         }
         // test car performance
         // if the m key is pressed
-        if (keyCode == 77) {
+        // if (keyCode == 77) {
+        if(editingMode == 'Add Cars Mode'){
             // log m key pressed
             console.log("m key pressed");
             // add 10 cars to the cars array
@@ -446,6 +460,10 @@ function intersectionInfo() {
     text("Number of lanes: " + lanes.length, 10, 50);
     // write the number of dots top left
     text("Number of cars: " + cars.length, 10, 80);
+    // in the center of the screen write the editingmode
+    textAlign(CENTER);
+    text(editingMode,width/2,20);
+    textAlign(LEFT);
     // find the number of cars with speed less than 1
     var slowCars = 0;
     for (var i = 0; i < cars.length; i++) {
