@@ -474,17 +474,18 @@ function intersectionInfo() {
     let lengthOfBar = 200;
     // create a red rectangle to show the number of slow cars
     fill(255, 0, 0);
-    rect(10, 110, (lengthOfBar*slowCars)/(cars.length+slowCars), 10);
+    rect(10, 110, (lengthOfBar*slowCars)/(cars.length), 10);
     // create a green rectangle to show the number of fast cars
     fill(0, 255, 0);
-    rect(10+(lengthOfBar*slowCars)/(cars.length+slowCars), 110, (lengthOfBar*(cars.length))/(cars.length+slowCars), 10);
+    rect(10+(lengthOfBar*slowCars)/(cars.length), 110, lengthOfBar-(lengthOfBar*slowCars)/(cars.length), 10);
+
     // if there are more than 0 cars
     if (cars.length > 0) {
         // text align center
         textAlign(CENTER);
         // below the red rectangle write the number of slow cars
         fill(0);
-        text(slowCars, 10+(lengthOfBar*slowCars)/(cars.length+slowCars), 140);
+        text(slowCars, 10+(lengthOfBar*slowCars)/(cars.length)/2, 140);
         // below the green rectangle write the number of fast cars
         text((cars.length), 10+lengthOfBar, 140);
     }
@@ -601,7 +602,7 @@ function roundAboutUpdate() {
                 // if the car has the intersection as target
                 if (cars[j].target == intersections[i]) {
                     // if the car is in the intersection
-                    if (distPoints(cars[j].x, cars[j].y, intersections[i].location.x, intersections[i].location.y) < 10) {
+                    if (distPoints(cars[j].x, cars[j].y, intersections[i].location.x, intersections[i].location.y) < 5) {
                         // push the car to the cars in intersection array
                         carsInIntersection.push(cars[j]);
                     }
@@ -620,14 +621,8 @@ function roundAboutUpdate() {
                     // set this as a random intersection    
                     var randomIntersection = intersections[i].roads[randomRoad].end;
                     var doMove = true;
-                    // // loop the cars in the traffic between the intersections
-                    // for (let k = 0; k < intersections[i].roads[randomRoad].traffic.length; k++) {
-                    //     // if the distance to the car from the intersection is less than 10
-                    //     if (distPoints(intersections[i].roads[randomRoad].traffic[k].x, intersections[i].roads[randomRoad].traffic[k].y, intersections[i].location.x, intersections[i].location.y) < 5) {
-                    //         // set doMove to false
-                    //         doMove = false;
-                    //     }
-                    // }
+                    // loop the cars in the traffic between the intersections
+                    // if ()
                     if (doMove) {
                         // find the car in the lanes array
                         for (let k = 0; k < lanes.length; k++) {
