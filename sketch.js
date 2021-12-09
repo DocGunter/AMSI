@@ -16,6 +16,9 @@ var selectedIntersection = [];
 // let mode be set to   
 let editingMode = 'Press Key To Change Mode';
 
+// intersection types
+let types = ['Giveway', 'Roundabout', 'Traffic Lights'];
+
 
 // draw function
 function draw() {
@@ -32,14 +35,44 @@ function draw() {
     if (keyCode == 77){
         editingMode = 'Add Cars Mode';
     }
+    // if the t key is pressed
+    if (keyCode == 84){
+        editingMode = 'Intersection Type Mode';
+    }
+
+    
     mouseClicked = function() {
         // if the n key is pressed
         // if (keyCode == 78) {
         if (editingMode == 'New Intersection Mode'){
             // create a new intersection at the mouse location
             console.log("New Intersection added with ID: "+intersections.length);
-            intersections.push(new Intersection(createVector(mouseX, mouseY),'roundabout',[],intersections.length,false));
+            intersections.push(new Intersection(createVector(mouseX, mouseY),'Roundabout',[],intersections.length,false));
         }
+        // if the editing mode is types
+        if (editingMode == 'Intersection Type Mode'){
+            let rectWidth = 100;
+            let rectHeight = 100;
+            // for each intersection
+            for (var i = 0; i < intersections.length; i++) {
+                // if the mouse is above the rectangle
+                if (mouseX > intersections[i].location.x-rectWidth/2 && mouseX < intersections[i].location.x+rectWidth/2 && mouseY > intersections[i].location.y-rectHeight-40 && mouseY < intersections[i].location.y-40) {
+                    // find the section of the rectangle the mouse is over
+                    let section = Math.floor((mouseY-intersections[i].location.y+40)/(rectHeight/3));
+                    // make section positive
+                    section = Math.abs(section)-1;
+                    // set the type of the intersection to the type of the section
+                    intersections[i].type = types[section];
+                    // log the types
+                    console.log(types[section]);
+                    // log the section
+                    console.log(section);
+                    // log the change
+                    console.log("Intersection "+intersections[i].id+" changed to "+intersections[i].type);
+                }
+            }
+        }
+        
         // // if the c key is pressed
         // if (keyCode == 67) {
         if (editingMode == 'Connection Mode'){
@@ -62,43 +95,6 @@ function draw() {
                     selectedIntersection.push(intersections[i]);
                 }
             }
-            // // if two intersections are selected
-            // if (selectedIntersection.length == 2) {
-            //     // if the two intersections are not connected
-            //     if (!isConnected(selectedIntersection[0], selectedIntersection[1])) {
-            //         // create a new road between the two intersections
-            //         console.log("New Road added between Intersections "+selectedIntersection[0].id+" and "+selectedIntersection[1].id);
-            //         console.log("Road ID: "+selectedIntersection[0].id+'-'+selectedIntersection[1].id);
-            //         roads.push(new Road(selectedIntersection[0],selectedIntersection[1],1,selectedIntersection[0].id+'-'+selectedIntersection[1].id,[]));
-            //         // add the road to each intersection
-            //         selectedIntersection[0].roads.push(roads[roads.length-1]);
-            //         selectedIntersection[1].roads.push(roads[roads.length-1]);
-            //         // loop the selectedIntersection array
-            //         for (var i = 0; i < selectedIntersection.length; i++) {
-            //             // deselect the intersection
-            //             selectedIntersection[i].isSelected = false;
-            //         }
-            //         // log the number of connected roads at each intersection
-            //         for (var i = 0; i < selectedIntersection.length; i++) {
-            //             console.log("Number of connected roads at Intersection "+selectedIntersection[i].id+": "+selectedIntersection[i].roads.length);
-            //         }
-            //         // clear the selectedIntersection array
-            //         selectedIntersection = [];
-            //         // log the number of roads
-            //         console.log("Number of roads: "+roads.length);
-                    
-            //     }else{
-            //         // log the two intersections are already connected
-            //         console.log("The two intersections are already connected");
-            //         // loop the selectedIntersection array
-            //         for (var i = 0; i < selectedIntersection.length; i++) {
-            //             // deselect the intersection
-            //             selectedIntersection[i].isSelected = false;
-            //         }
-            //         // clear the selectedIntersection array
-            //         selectedIntersection = [];
-            //     }
-            // }
             // if two intersections are selected
             if (selectedIntersection.length == 2) {
                 // if the two intersections are not connected
@@ -162,6 +158,11 @@ function draw() {
     drawCars();
     // draw info
     intersectionInfo();
+    // if the t key is pressed
+    // if (keyCode == 84) {
+    if (editingMode == 'Intersection Type Mode'){
+        typeInfo();
+    }
 
 }
 
@@ -370,7 +371,7 @@ function updateTraffic() {
                 return distPoints(a.x, a.y, a.target.location.x, a.target.location.y)-distPoints(b.x,b.y,b.target.location.x,b.target.location.y);
             });
             // loop through all the cars in the sorted array
-            for (var j = 1; j < sortedTraffic.length; j++) {
+            for (var j = 0; j < sortedTraffic.length; j++) {
                 // set the speed to 1
                 sortedTraffic[j].speed = 1;
                 let speedMult = 1
@@ -385,12 +386,14 @@ function updateTraffic() {
                     speedMult = 0.25;
                 }
                 // if the distance from the car to the previous index car is less than 10 set the speed to 0
-                if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j-1].x, sortedTraffic[j-1].y) < 11) {
-                    // set the j speed to 0
-                    sortedTraffic[j].speed = 0;
-                }else{
-                    // set the j speed to 1
-                    sortedTraffic[j].speed = 1;
+                if (j>0){
+                    if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j-1].x, sortedTraffic[j-1].y) < 11) {
+                        // set the j speed to 0
+                        sortedTraffic[j].speed = 0;
+                    }else{
+                        // set the j speed to 1
+                        sortedTraffic[j].speed = 1;
+                    }
                 }
                 // set the cars speed to 1*speedMult
                 sortedTraffic[j].speed = sortedTraffic[j].speed * speedMult;
@@ -451,6 +454,7 @@ function addCarsToIntersection(intersection) {
 }
 // create a function for info
 function intersectionInfo() {
+
     // fill black
     fill(0);
     textSize(20);
@@ -495,15 +499,18 @@ function intersectionInfo() {
     textSize(15);
     // set the color to black
     fill(0);
+    // at the top right of the screen write the fps
+    text("FPS: " + Math.round(frameRate()), width - 100, 20);
+    text("Press t to edit intersection type", 10, height - 20);
     // at the bottom of the screen write
     // Press m and click to add a car
-    text("Press m and click to add a car", 10, height - 20);
+    text("Press m and click to add a car", 10, height - 40);
     // above this write
     // Press c and click on intersections to connect lanes
-    text("Press c and click on intersections to connect lanes", 10, height - 40);
+    text("Press c and click on intersections to connect lanes", 10, height - 60);
     // above this write
     // Press n and click to add an intersection
-    text("Press n and click to add an intersection", 10, height - 60);
+    text("Press n and click to add an intersection", 10, height - 80);
     // reset the font size  
     textSize(20);
     var indexOfMouse = 0;
@@ -529,12 +536,15 @@ function intersectionInfo() {
             }
         }
         if (distPoints(mouseX, mouseY, intersections[i].location.x, intersections[i].location.y) > 20) {
-            //above each intersection
-            let rangeOfRed = 60/(carsInIntersection);
-            fill(255, 0, 0);
-            rect(intersections[i].location.x-30, intersections[i].location.y - 50, rangeOfRed*carInQueue, 10);
-            fill(0,255,0);
-            rect(intersections[i].location.x-30+rangeOfRed*carInQueue , intersections[i].location.y - 50, rangeOfRed*(carsInIntersection-carInQueue), 10);
+            // if editingmode is not type
+            if (editingMode != "Intersection Type Mode") {
+                //above each intersection
+                let rangeOfRed = 60/(carsInIntersection);
+                fill(255, 0, 0);
+                rect(intersections[i].location.x-30, intersections[i].location.y - 50, rangeOfRed*carInQueue, 10);
+                fill(0,255,0);
+                rect(intersections[i].location.x-30+rangeOfRed*carInQueue , intersections[i].location.y - 50, rangeOfRed*(carsInIntersection-carInQueue), 10);
+            }
         }else{
             // is over is true
             isOverIntersection = true;
@@ -542,25 +552,6 @@ function intersectionInfo() {
             indexOfMouse = i;
             // set the values to display to the intersection id and the number of cars in intersection
             valuesToDisplay = [carInQueue, carsInIntersection];
-            // // show a box in the top right with the type of intersection inside
-            // fill(255);
-            // rect(mouseX + 20, mouseY - 20, 200, 200);
-            // fill(0);
-            // text(intersections[i].type, mouseX + 30, mouseY );
-            // // make the text smaller
-            // textSize(10);
-            // // list current number of connected lanes
-            // text("Number of Connected Lanes: "+intersections[i].roads.length, mouseX + 30, mouseY + 20);
-            // // list the number of cars in the intersection
-            // text("Number of cars towards intersection: " + carsInIntersection, mouseX + 30, mouseY + 40);
-            // text("Number of cars in queue: " + carInQueue, mouseX + 30, mouseY + 60);
-            // // draw a red rectangle below the text of qued cars
-            // fill(255, 0, 0);
-            // let rangeOfRed = 180/(carsInIntersection);
-            // rect(mouseX + 30, mouseY +70, rangeOfRed*carInQueue, 10);
-            // fill(0,255,0);
-            // rect(mouseX + 30+rangeOfRed*carInQueue , mouseY +70, rangeOfRed*(carsInIntersection-carInQueue), 10);
-            // textSize(20);
             
         }
     }
@@ -594,7 +585,7 @@ function roundAboutUpdate() {
     // loop through all the intersections
     for (let i = 0; i < intersections.length; i++) {
         // check if it is a roundabout
-        if (intersections[i].type == "roundabout") {
+        if (intersections[i].type == "Roundabout") {
             // create an array of cars in the intersection
             var carsInIntersection = [];
             // loop though all cars
@@ -620,7 +611,7 @@ function roundAboutUpdate() {
                     var randomRoad = Math.floor(Math.random()*intersections[i].roads.length);
                     // set this as a random intersection    
                     var randomIntersection = intersections[i].roads[randomRoad].end;
-                    var doMove = true;
+                    var doMove = roomOnRoad(intersections[i].roads[randomRoad]);
                     // loop the cars in the traffic between the intersections
                     // if ()
                     if (doMove) {
@@ -654,48 +645,6 @@ function roundAboutUpdate() {
                     carsInIntersection[j].speed = 0;
                 }
             }
-
-            // //loop the first 4 cars in intersection
-            // for (let j = 0; j < carsInIntersection.length; j++) {
-            //     // loop through all the cars in the intersection
-            //     for (let k = 0; k < carsInIntersection.length; k++) {
-            //         // if k is less than the connected roads
-            //         if (k <= intersections[i].roads.length) {
-            //             // random index value
-            //             var randomIndex = Math.floor(Math.random() * intersections[i].roads.length);
-            //             // find a randome intersection connected to the current intersection
-            //             var randomIntersection = intersections[i].roads[randomIndex].end;
-            //             // set the cars target to the random intersection
-            //             carsInIntersection[k].target = randomIntersection;
-            //             // loop the lanes
-            //             for (let l = 0; l < intersections[i].roads.length; l++) {
-            //                 // loop the traffic
-            //                 for (let m = 0; m < intersections[i].roads[l].traffic.length; m++) {
-            //                     // if the car is the same as the current car
-            //                     if (carsInIntersection[k] == intersections[i].roads[l].traffic[m]) {
-            //                         // remove the car from the traffic
-            //                         intersections[i].roads[l].traffic.splice(m, 1);
-            //                     }
-            //                 }
-            //             }
-            //             // loop the lane array
-            //             for (let l = 0; l < lanes.length; l++) {
-            //             // set the cars location to the intersection
-            //             carsInIntersection[k].x = intersections[i].location.x;
-            //             carsInIntersection[k].y = intersections[i].location.y;
-            //             // append the car to the road between the two
-            //             intersections[i].roads[randomIndex].traffic.push(carsInIntersection[k]);
-            //             // set the cars speed to 1
-            //             carsInIntersection[k].speed = 1;
-            //             // remove the car from the intersection
-            //             carsInIntersection.splice(k, 1);
-            //         }else{
-            //             // set the car speed to 0
-            //             carsInIntersection[k].speed = 0;
-            //         }
-
-            //     }
-            // }
         }
     }
 }
@@ -715,4 +664,61 @@ function findLane(intersection1, intersection2) {
         }
     }
 }
-
+// create a function to update give way intersections
+function updateGiveWayIntersections() {
+    // loop through all the intersections
+    for (let i = 0; i < intersections.length; i++) {
+        // if the intersection has a give way intersection
+        if (intersections[i].type == "Giveway") {
+            
+        }
+            
+    }
+}
+// create a function called room on road
+function roomOnRoad(road) {
+    // check if the space from the start of the road to the last car is less than the car size 
+    if (road.traffic.length > 0 ){
+        if (distPoints(road.start.location.x, road.start.location.y, road.traffic[road.traffic.length-1].x, road.traffic[road.traffic.length-1].y) < 10) {
+            return false
+        }else{
+            return true
+        }
+    }else{
+        return true
+    }
+}
+// function called typeInfo
+function typeInfo() {
+    // above each intersection draw a rectangle
+    for (var i = 0; i < intersections.length; i++) {
+        // draw a rectangle at the location of the intersection
+        // set the width and height of the rectangle
+        let rectWidth = 100;
+        let rectHeight = 100;
+        fill(255);
+        rect(intersections[i].location.x-rectWidth/2, intersections[i].location.y-rectHeight-40, rectWidth, rectHeight);
+        // inside the rectangle have three ellipses
+        // one for each type of intersection
+        for (var j = 0; j < types.length; j++) {
+            let fillColour = color(0,0,0);
+            if (intersections[i].type == types[j]){
+                // set the fill colour to dark green
+                fillColour = color(0,255,0);
+            }else{
+                // set the fill colour to black
+                fillColour = color(0,0,0);
+            }
+            // set the size of the ellipse
+            let ellipseSize = 10;
+            // set the color of the ellipse
+            fill(fillColour);
+            // draw the ellipse
+            ellipse(intersections[i].location.x-rectWidth/2+10, intersections[i].location.y-40-rectHeight/6-(j)*rectHeight/3, ellipseSize, ellipseSize);
+            // write the type of intersection
+            // text size smaller
+            textSize(10);
+            text(types[j], intersections[i].location.x-rectWidth/2+10+ellipseSize, intersections[i].location.y-40-rectHeight/6-(j)*rectHeight/3+ellipseSize/2);
+        }
+    }
+}
