@@ -47,7 +47,7 @@ function draw() {
         if (editingMode == 'New Intersection Mode'){
             // create a new intersection at the mouse location
             console.log("New Intersection added with ID: "+intersections.length);
-            intersections.push(new Intersection(createVector(mouseX, mouseY),'Roundabout',[],intersections.length,false));
+            intersections.push(new Intersection(createVector(mouseX, mouseY),'Roundabout',[],intersections.length,false,[],[]));
         }
         // if the editing mode is types
         if (editingMode == 'Intersection Type Mode'){
@@ -70,7 +70,13 @@ function draw() {
                     // log the change
                     console.log("Intersection "+intersections[i].id+" changed to "+intersections[i].type);
                 }
+                // if the mouse an intersection
+                if (dist(intersections[i].location,createVector(mouseX,mouseY)) < 20) {
+                    // set the selected intersection to the intersection
+                    selectedIntersection = intersections[i];
+                }
             }
+
         }
         
         // // if the c key is pressed
@@ -151,6 +157,7 @@ function draw() {
     drawIntersections();
     // roundabout update
     roundAboutUpdate();
+    updateGiveWayIntersections();
     // update the traffic
     updateTraffic();
     
@@ -169,7 +176,7 @@ function draw() {
 // create an intersection class
 class Intersection {
     // constructor
-    constructor(location, type,roads,id,isSelected) {
+    constructor(location, type,roads,id,isSelected,priorityDiagram,priorityList) {
         // set the location
         this.location = location;
         // set the type
@@ -180,6 +187,11 @@ class Intersection {
         this.id = id;
         // set the isSelected   
         this.isSelected = isSelected;
+        // set the priority diagram
+        this.priorityDiagram = priorityDiagram;
+        // set the priority list
+        this.priorityList = priorityList;
+
     }
     // draw function
     draw() {
@@ -191,8 +203,14 @@ class Intersection {
             // set the color to white
             fill(255);
         }
-        // draw a circle
-        ellipse(this.location.x, this.location.y, 20, 20);
+        // if the type is roundabout
+        if (this.type == 'Roundabout') {
+            // draw a circle
+            ellipse(this.location.x, this.location.y, 20, 20);
+        }else{
+            // draw a rectangle
+            rect(this.location.x-10, this.location.y-10, 20, 20);
+        }
     }
 }
 // create a new lane class
@@ -376,14 +394,16 @@ function updateTraffic() {
                 sortedTraffic[j].speed = 1;
                 let speedMult = 1
                 // if the distance from the car to the target is less than 20 set the speed to 0.5
-                if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 40) {
-                    // set the j speed to 0.5
-                    speedMult = 0.5;
-                }
-                // if the distance from the car to the target is less than 10 set the speed to 0.25
-                if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 30) {
-                    // set the j speed to 0.25
-                    speedMult = 0.25;
+                if(sortedTraffic[j].target.type == types[1]){
+                    if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 40 ) {
+                        // set the j speed to 0.5
+                        speedMult = 0.5;
+                    }
+                    // if the distance from the car to the target is less than 10 set the speed to 0.25
+                    if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 30  ) {
+                        // set the j speed to 0.25
+                        speedMult = 0.25;
+                    }
                 }
                 // if the distance from the car to the previous index car is less than 10 set the speed to 0
                 if (j>0){
@@ -605,35 +625,37 @@ function roundAboutUpdate() {
             for (let j = 0; j < carsInIntersection.length; j++) {
                 // if j is less than the connected roads length
                 var throughPut = intersections[i].roads.length;
-                throughPut = 2;
+                //throughPut = 2;
                 if (j < throughPut) {
                     // create a random int between 0 and the number of roads in the intersection
-                    var randomRoad = Math.floor(Math.random()*intersections[i].roads.length);
+                    var randomRoad = getRandomIntersection(intersections[i],carsInIntersection[j]);
                     // set this as a random intersection    
                     var randomIntersection = intersections[i].roads[randomRoad].end;
+
                     var doMove = roomOnRoad(intersections[i].roads[randomRoad]);
                     // loop the cars in the traffic between the intersections
                     // if ()
                     if (doMove) {
-                        // find the car in the lanes array
-                        for (let k = 0; k < lanes.length; k++) {
-                            // if the car is in the lanes traffic   
-                            if (lanes[k].traffic.includes(carsInIntersection[j])) {
-                                // remove the car from the lanes traffic
-                                lanes[k].traffic.splice(lanes[k].traffic.indexOf(carsInIntersection[j]), 1);
-                            }
-                        }
-                        // set the cars target to the random intersection
-                        carsInIntersection[j].target = randomIntersection;
-                        // set the cars x and y to the intersection x and y
-                        carsInIntersection[j].x = intersections[i].location.x;
-                        carsInIntersection[j].y = intersections[i].location.y;
-                        // add the car to the roads traffic
-                        intersections[i].roads[randomRoad].traffic.push(carsInIntersection[j]);
-                        // set the cars id to the roads id
-                        carsInIntersection[j].id = intersections[i].roads[randomRoad].id;
-                        // set the car speed to 1
-                        carsInIntersection[j].speed = 1;
+                        // // find the car in the lanes array
+                        // for (let k = 0; k < lanes.length; k++) {
+                        //     // if the car is in the lanes traffic   
+                        //     if (lanes[k].traffic.includes(carsInIntersection[j])) {
+                        //         // remove the car from the lanes traffic
+                        //         lanes[k].traffic.splice(lanes[k].traffic.indexOf(carsInIntersection[j]), 1);
+                        //     }
+                        // }
+                        // // set the cars target to the random intersection
+                        // carsInIntersection[j].target = randomIntersection;
+                        // // set the cars x and y to the intersection x and y
+                        // carsInIntersection[j].x = intersections[i].location.x;
+                        // carsInIntersection[j].y = intersections[i].location.y;
+                        // // add the car to the roads traffic
+                        // intersections[i].roads[randomRoad].traffic.push(carsInIntersection[j]);
+                        // // set the cars id to the roads id
+                        // carsInIntersection[j].id = intersections[i].roads[randomRoad].id;
+                        // // set the car speed to 1
+                        // carsInIntersection[j].speed = 1;
+                        moveCarOneIntersectionToAnother(carsInIntersection[j], intersections[i],randomRoad);
                         // remove the car from the cars in intersection
                         carsInIntersection.splice(j, 1);
                     }else{
@@ -668,11 +690,49 @@ function findLane(intersection1, intersection2) {
 function updateGiveWayIntersections() {
     // loop through all the intersections
     for (let i = 0; i < intersections.length; i++) {
-        // if the intersection has a give way intersection
+        // if the intersection is a give way intersection
         if (intersections[i].type == "Giveway") {
-            
-        }
-            
+            let carsInIntersection = [];
+            // loop through all the cars
+            for (let j = 0; j < cars.length; j++) {
+                // if the car has the intersection as target
+                if (cars[j].target == intersections[i]) {
+                    // if the car is in the intersection
+                    if (distPoints(cars[j].x, cars[j].y, intersections[i].location.x, intersections[i].location.y) < 5) {
+                        // push the car to the cars in intersection array
+                        carsInIntersection.push(cars[j]);
+                    }
+                }
+            }
+            let newTargetsIndex = [];
+            // loop through all the cars in the intersection
+            for (let j = 0; j < carsInIntersection.length; j++) {
+                var randomRoad = getRandomIntersection(intersections[i],carsInIntersection[j]);
+                
+                // set this as a random intersection    
+                var randomIntersection = intersections[i].roads[randomRoad].end;
+                newTargetsIndex.push(randomIntersection);
+            }
+            // sort the cars in the intersection by the distance to the intersection
+            carsInIntersection.sort(function(a, b){return distPoints(a.x, a.y, intersections[i].location.x, intersections[i].location.y) - distPoints(b.x, b.y, intersections[i].location.x, intersections[i].location.y)});
+
+            if (carsInIntersection.length > 0) {
+                let orderedCars = [];
+                // loop cars in intersection
+                let indexOfConcern = 0;
+                for (let j = 0; j < carsInIntersection.length; j++) {
+                    let val = findGivewayThree(carsInIntersection[j], newTargetsIndex[j]);
+                    orderedCars.push(val);
+                    if(val == 0 || carsInIntersection.length == 1){
+                        indexOfConcern = j;
+                    }  
+                }
+                
+                moveCarOneIntersectionToAnother(carsInIntersection[indexOfConcern], intersections[i],randomRoad);
+                // log the priorityDiagram of the intersection
+                console.log(intersections[i].priorityDiagram);
+            }
+        }    
     }
 }
 // create a function called room on road
@@ -688,21 +748,30 @@ function roomOnRoad(road) {
         return true
     }
 }
+
 // function called typeInfo
 function typeInfo() {
+    let sortedByDistance = [];
+    
+    // sort intersections by distance to mouse
+    sortedByDistance = intersections.sort(function(a, b){return distPoints(a.location.x, a.location.y, mouseX, mouseY) - distPoints(b.location.x, b.location.y, mouseX, mouseY)});
+    // reverse the sorted intersections
+    sortedByDistance.reverse();
+    // if any of the intersections are selected
+    
     // above each intersection draw a rectangle
-    for (var i = 0; i < intersections.length; i++) {
+    for (var i = 0; i < sortedByDistance.length; i++) {
         // draw a rectangle at the location of the intersection
         // set the width and height of the rectangle
         let rectWidth = 100;
         let rectHeight = 100;
         fill(255);
-        rect(intersections[i].location.x-rectWidth/2, intersections[i].location.y-rectHeight-40, rectWidth, rectHeight);
+        rect(sortedByDistance[i].location.x-rectWidth/2, sortedByDistance[i].location.y-rectHeight-40, rectWidth, rectHeight);
         // inside the rectangle have three ellipses
         // one for each type of intersection
         for (var j = 0; j < types.length; j++) {
             let fillColour = color(0,0,0);
-            if (intersections[i].type == types[j]){
+            if (sortedByDistance[i].type == types[j]){
                 // set the fill colour to dark green
                 fillColour = color(0,255,0);
             }else{
@@ -714,11 +783,190 @@ function typeInfo() {
             // set the color of the ellipse
             fill(fillColour);
             // draw the ellipse
-            ellipse(intersections[i].location.x-rectWidth/2+10, intersections[i].location.y-40-rectHeight/6-(j)*rectHeight/3, ellipseSize, ellipseSize);
+            ellipse(sortedByDistance[i].location.x-rectWidth/2+10, sortedByDistance[i].location.y-40-rectHeight/6-(j)*rectHeight/3, ellipseSize, ellipseSize);
             // write the type of intersection
             // text size smaller
             textSize(10);
-            text(types[j], intersections[i].location.x-rectWidth/2+10+ellipseSize, intersections[i].location.y-40-rectHeight/6-(j)*rectHeight/3+ellipseSize/2);
+            text(types[j], sortedByDistance[i].location.x-rectWidth/2+10+ellipseSize, sortedByDistance[i].location.y-40-rectHeight/6-(j)*rectHeight/3+ellipseSize/2);
+        }
+        if (sortedByDistance[i].type == "Giveway"){
+            // draw another rectangle to the side of the first rectangle
+            fill(255);
+            rect(sortedByDistance[i].location.x+rectWidth/2, sortedByDistance[i].location.y-rectHeight-40, rectWidth, rectHeight);
+
+            // find the number of roads at this intersection
+            let numberOfRoads = sortedByDistance[i].roads.length;
+            // draw a dot for each road
+            let vectorsToIntersections = [];
+            let selectedIntersections = [];
+            ellipse(sortedByDistance[i].location.x+rectWidth/2+rectWidth/2,sortedByDistance[i].location.y-rectHeight-40+rectHeight/2,10,10)
+            for (var j = 0; j < sortedByDistance[i].roads.length; j++) {
+                // find the vector to the intersection from the roads end
+                vectorsToIntersections.push(createVector(sortedByDistance[i].location.x-sortedByDistance[i].roads[j].end.location.x, sortedByDistance[i].location.y-sortedByDistance[i].roads[j].end.location.y));
+                // make the vector a unit vector
+                vectorsToIntersections[j].normalize();
+                // log the vector
+                //console.log(vectorsToIntersections[j]);
+                // let xSigns = [0,40,80,40];
+                // let ySigns = [0,40,0,-40];
+                // set the size of the dot
+                let dotSize = 10;
+                // set the color of the dot
+                if(sortedByDistance[i].roads[j].end.isSelected){
+                    fill(0,255,0);
+                }else{
+                    fill(0,0,0);
+                }
+                // draw the dot on each side of the box
+                let xChange = sortedByDistance[i].location.x+rectWidth/2+10+rectWidth/2-vectorsToIntersections[j].x*30;
+                let yChange = sortedByDistance[i].location.y-rectHeight-40+rectHeight/2-vectorsToIntersections[j].y*30;
+
+                
+                // if the mouse is over a dot
+                let current = sortedByDistance[i];
+                if (distPoints(mouseX, mouseY, xChange, yChange) < dotSize) {  
+                    let closest = sortedByDistance[i].roads[j].end;
+                    
+                    mouseClicked = function() {
+                        // console log the location
+                        console.log("Mouse clicked");
+                        // if closest is selected
+                        if (closest.isSelected) {
+                            // set closest to not selected
+                            closest.isSelected = false;
+                            // set current diagram to []
+                            current.priorityDiagram = [];
+                            current.priorityList = [];
+                            // set all intersections to not selected
+                            for (var k = 0; k < intersections.length; k++) {
+                                intersections[k].isSelected = false;
+                            }
+                        }else{
+                            // set closest to selected
+                            
+                            if(current.priorityDiagram.length < 2){
+                                closest.isSelected = true;
+                                current.priorityDiagram.push(createVector(xChange, yChange)); 
+                                current.priorityList.push(closest);
+                                console.log(current.priorityList.length);
+                            }
+                        }
+                    }
+                }
+                // draw the vector inside the box
+                ellipse(xChange, yChange, dotSize, dotSize); 
+                // log the length of selectedIntersections
+                for (var k = 0; k < current.priorityDiagram.length; k++) {
+                    // draw a line from the dot to the priority diagram
+                    line(current.priorityDiagram[k].x, current.priorityDiagram[k].y, sortedByDistance[i].location.x+rectWidth/2+rectWidth/2, sortedByDistance[i].location.y-rectHeight-40+rectHeight/2);
+                }
+            }
+        }
+    }
+}
+
+// create a function that takes an intersection and returns a random road connected to it
+function getRandomIntersection(intersection,car) {
+    // create a random int between 0 and the number of roads in the intersection
+    var randomRoad = Math.floor(Math.random()*intersection.roads.length);
+    if(intersection.roads.length > 1){
+        let newId = intersection.roads[randomRoad].end.id + "-" + intersection.roads[randomRoad].start.id;
+        console.log(newId);
+        while(newId == car.id){
+            randomRoad = Math.floor(Math.random()*intersection.roads.length);
+            console.log("stuck in while loop");
+            newId = intersection.roads[randomRoad].end.id + "-" + intersection.roads[randomRoad].start.id;
+        }
+    }
+    return randomRoad;
+}
+// define a function that moves a car from one lane to another
+function moveCarOneIntersectionToAnother(car, intersection, randomRoad) {
+    var randomIntersection = intersection.roads[randomRoad].end;
+    // find the car in the lanes array
+    for (let k = 0; k < lanes.length; k++) {
+        // if the car is in the lanes traffic   
+        if (lanes[k].traffic.includes(car)) {
+            // remove the car from the lanes traffic
+            lanes[k].traffic.splice(lanes[k].traffic.indexOf(car), 1);
+        }
+    }
+    // set the cars target to the random intersection
+    car.target = randomIntersection;
+    // set the cars x and y to the intersection x and y
+    car.x = intersection.location.x;
+    car.y = intersection.location.y;
+    // add the car to the roads traffic
+    intersection.roads[randomRoad].traffic.push(car);
+    // set the cars id to the roads id
+    car.id = intersection.roads[randomRoad].id;
+    // set the car speed to 1
+    car.speed = 1;
+}
+// create a function to return the order of movement at a giveway
+function getOrderOfMovement(intersection) {
+    let orderOfMovement = [];
+    // for each road in the intersection
+    let otherIntersections = [];
+    if(priorityList.length > 1){
+        let intersectionA = intersection.priorityList[0];
+        let intersectionB = intersection.priorityList[1];
+    }
+    for (let i = 0; i < intersection.roads.length; i++) {
+        // if the road is not intersectionA or intersectionB
+        if(intersection.roads[i].end.id != intersectionA.id && intersection.roads[i].end.id != intersectionB.id){
+            otherIntersections.push(intersection.roads[i].end);
+        }
+    }
+    // for (let i = 0; i < 2*intersection.roads.length; i++){
+
+    // }
+}
+// create a function for a car to find the lanes it must giveway to
+function findGivewayThree(car,goal) {
+    if (car.target.priorityList.length > 1) {
+        let A = car.target.priorityList[0];
+        let B = car.target.priorityList[1];
+        let C = [];
+        // loop the cars targets roads
+        let carRoot = car.target;
+        for (let i = 0; i < car.target.roads.length; i++) {
+            // if the road is not A or B
+            if(car.target.roads[i].end.id != A.id && car.target.roads[i].end.id != B.id){
+                C.push(car.target.roads[i].end);
+            }
+            // if the roads end and the target is the same as the cars id
+            if(car.target.roads[i].start.id+'-'+car.target.id == car.id){
+                // set the cars root to the roads end
+                carRoot = car.target.roads[i].end;
+                console.log(carRoot.location.x+" "+carRoot.location.y);
+            }
+        }
+        // if the cars root and goal are in the priority list
+        if(carRoot.id == A.id ){
+            if(goal.id == B.id){
+                // set the cars root to the cars target
+                return 0
+            }
+            if(goal.id == C[0].id){
+                return 2;
+            } 
+        }
+        if(carRoot.id == B.id){
+            if(goal.id == A.id){
+                return 0;
+            }
+            if(goal.id == C[0].id){
+                return 0;
+            }
+        }
+        if(carRoot.id == C[0].id){
+            if(goal.id == A.id){
+                return 1;
+            }
+            if(goal.id == B.id){
+                return 3;
+            }
         }
     }
 }
