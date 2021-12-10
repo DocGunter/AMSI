@@ -397,12 +397,12 @@ function updateTraffic() {
                 if(sortedTraffic[j].target.type == types[1]){
                     if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 40 ) {
                         // set the j speed to 0.5
-                        speedMult = 0.5;
+                        speedMult = 0.7;
                     }
                     // if the distance from the car to the target is less than 10 set the speed to 0.25
                     if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 30  ) {
                         // set the j speed to 0.25
-                        speedMult = 0.25;
+                        speedMult = 0.5;
                     }
                 }
                 // if the distance from the car to the previous index car is less than 10 set the speed to 0
@@ -698,7 +698,7 @@ function updateGiveWayIntersections() {
                 // if the car has the intersection as target
                 if (cars[j].target == intersections[i]) {
                     // if the car is in the intersection
-                    if (distPoints(cars[j].x, cars[j].y, intersections[i].location.x, intersections[i].location.y) < 5) {
+                    if (distPoints(cars[j].x, cars[j].y, intersections[i].location.x, intersections[i].location.y) < 15) {
                         // push the car to the cars in intersection array
                         carsInIntersection.push(cars[j]);
                     }
@@ -727,10 +727,11 @@ function updateGiveWayIntersections() {
                         indexOfConcern = j;
                     }  
                 }
-                
-                moveCarOneIntersectionToAnother(carsInIntersection[indexOfConcern], intersections[i],randomRoad);
-                // log the priorityDiagram of the intersection
-                console.log(intersections[i].priorityDiagram);
+                if(roomOnRoad(intersections[i].roads[randomRoad])){
+                    moveCarOneIntersectionToAnother(carsInIntersection[indexOfConcern], intersections[i],randomRoad);
+                    // log the priorityDiagram of the intersection
+                    console.log(intersections[i].priorityDiagram);
+                }
             }
         }    
     }
