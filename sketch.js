@@ -529,11 +529,12 @@ function updateTraffic() {
                 }
                 let speedMult = 1
                 // if the distance from the car to the target is less than 20 set the speed to 0.5
-                // if(sortedTraffic[j].target.type == types[1]){
-                //     if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 20 ) {
-                //         // set the j speed to 0.5
-                //         speedMult = 0.8;
-                //     }
+                if(sortedTraffic[j].target.type == types[1]){
+                    if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 20 ) {
+                        // set the j speed to 0.5
+                        speedMult = 0.8;
+                    }
+                }
                 //     // if the distance from the car to the target is less than 10 set the speed to 0.25
                 //     if (distPoints(sortedTraffic[j].x, sortedTraffic[j].y, sortedTraffic[j].target.location.x, sortedTraffic[j].target.location.y) < 15  ) {
                 //         // set the j speed to 0.25
